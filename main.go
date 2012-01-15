@@ -40,20 +40,13 @@ func (n notifier) notifyProwl(note notification) (err error) {
 		Url:         note.url,
 	}
 
-	if err = p.Push(&msg); err != nil {
-		log.Printf("Error delivering prowl message: %v", err)
-	}
-
-	return
+	return p.Push(&msg)
 }
 
 func (n notifier) notifyNotifo(note notification) (err error) {
 	nfo := notifo.New(n.Config["apiuser"], n.Config["apisecret"])
-	if _, err = nfo.SendNotification(n.Config["to"], note.msg,
-		n.Config["label"], n.Config["title"], note.url); err != nil {
-
-		log.Printf("Error delivering notifo message:  %v", err)
-	}
+	_, err = nfo.SendNotification(n.Config["to"], note.msg,
+		n.Config["label"], n.Config["title"], note.url)
 	return
 }
 
@@ -61,20 +54,21 @@ func (n notifier) notify(note notification, resq chan<- bool) {
 	defer func() { resq <- true }()
 
 	for i := 0; i < max_retries; i++ {
+		var err error
 		switch n.Driver {
 		default:
 			log.Fatalf("Unknown driver:  %v", n.Driver)
 		case "prowl":
-			if n.notifyProwl(note) == nil {
-				return
-			}
+			err = n.notifyProwl(note)
 		case "notifo":
-			if n.notifyNotifo(note) == nil {
-				return
-			}
+			err = n.notifyNotifo(note)
 		}
-		time.Sleep(1 * time.Second)
-		log.Printf("Retrying a %s notification", n.Driver)
+		if err == nil {
+			break
+		} else {
+			time.Sleep(1 * time.Second)
+			log.Printf("Retrying notification %s due to %v", n.Name, err)
+		}
 	}
 }
 
@@ -91,7 +85,6 @@ func loadNotifiers() ([]notifier, error) {
 	if err = d.Decode(&notifiers); err != nil {
 		return notifiers, err
 	}
-
 	return notifiers, nil
 }
 
@@ -152,8 +145,10 @@ func main() {
 		case note := <-ch:
 			todo--
 			for _, n := range notifiers {
-				go n.notify(note, resq)
-				pending++
+				if !n.Disabled {
+					go n.notify(note, resq)
+					pending++
+				}
 
 			}
 		case _ = <-resq:
