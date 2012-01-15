@@ -136,6 +136,10 @@ func main() {
 	todo := 0
 	pending := 0
 
+	if flag.NArg() == 0 {
+		log.Fatalf("You didn't give me any URLs to watch.")
+	}
+
 	for _, u := range flag.Args() {
 		go checker(u, ch)
 		todo++
