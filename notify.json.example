@@ -19,5 +19,12 @@
             "label": "urlwatch",
             "title": "urlwatch state change"
         }
+    },
+    {
+        "name": "Request Bin Test",
+        "driver": "webhook",
+        "config": {
+            "url": "http://requestb.in/somevalidbin"
+        }
     }
 ]

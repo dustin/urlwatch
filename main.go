@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"github.com/devcamcar/notifo.go"
@@ -9,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -23,9 +25,9 @@ type notifier struct {
 }
 
 type notification struct {
-	url   string
-	event string
-	msg   string
+	Url   string
+	Event string
+	Msg   string
 }
 
 func (n notifier) notifyProwl(note notification) (err error) {
@@ -34,10 +36,10 @@ func (n notifier) notifyProwl(note notification) (err error) {
 
 	msg := goprowl.Notification{
 		Application: n.Config["application"],
-		Description: note.msg,
-		Event:       note.event,
+		Description: note.Msg,
+		Event:       note.Event,
 		Priority:    n.Config["priority"],
-		Url:         note.url,
+		Url:         note.Url,
 	}
 
 	return p.Push(&msg)
@@ -45,8 +47,25 @@ func (n notifier) notifyProwl(note notification) (err error) {
 
 func (n notifier) notifyNotifo(note notification) (err error) {
 	nfo := notifo.New(n.Config["apiuser"], n.Config["apisecret"])
-	_, err = nfo.SendNotification(n.Config["to"], note.msg,
-		n.Config["label"], n.Config["title"], note.url)
+	_, err = nfo.SendNotification(n.Config["to"], note.Msg,
+		n.Config["label"], n.Config["title"], note.Url)
+	return
+}
+
+func (n notifier) notifyWebhook(note notification) (err error) {
+	data, err := json.Marshal(note)
+	if err != nil {
+		return
+	}
+
+	r, err := http.Post(n.Config["url"], "application/json",
+		strings.NewReader(string(data)))
+	if err == nil {
+		defer r.Body.Close()
+		if r.StatusCode < 200 || r.StatusCode >= 300 {
+			err = errors.New(r.Status)
+		}
+	}
 	return
 }
 
@@ -62,6 +81,8 @@ func (n notifier) notify(note notification, resq chan<- bool) {
 			err = n.notifyProwl(note)
 		case "notifo":
 			err = n.notifyNotifo(note)
+		case "webhook":
+			err = n.notifyWebhook(note)
 		}
 		if err == nil {
 			break
@@ -89,7 +110,7 @@ func loadNotifiers() ([]notifier, error) {
 }
 
 func checker(u string, ch chan<- notification) {
-	note := notification{url: u}
+	note := notification{Url: u}
 	start := time.Now()
 	for {
 		log.Printf("Getting %v", u)
@@ -98,9 +119,9 @@ func checker(u string, ch chan<- notification) {
 			defer r.Body.Close()
 			log.Printf("Status of %s:  %v", u, r.Status)
 			if r.StatusCode >= 200 && r.StatusCode < 300 {
-				note.msg = fmt.Sprintf("Connected to %s, status=%s",
+				note.Msg = fmt.Sprintf("Connected to %s, status=%s",
 					u, r.Status)
-				note.event = "connected"
+				note.Event = "connected"
 				break
 			} else {
 				log.Printf("HTTP Error:  %v", r.Status)
@@ -110,8 +131,8 @@ func checker(u string, ch chan<- notification) {
 		}
 
 		if time.Now().Sub(start) > max_time {
-			note.msg = fmt.Sprintf("Giving up on %s", u)
-			note.event = "timeout"
+			note.Msg = fmt.Sprintf("Giving up on %s", u)
+			note.Event = "timeout"
 			break
 		}
 		time.Sleep(5 * time.Second)
