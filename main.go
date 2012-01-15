@@ -25,9 +25,9 @@ type notifier struct {
 }
 
 type notification struct {
-	Url   string
-	Event string
-	Msg   string
+	Url   string `json:"url"`
+	Event string `json:"event"`
+	Msg   string `json:"msg"`
 }
 
 func (n notifier) notifyProwl(note notification) (err error) {
