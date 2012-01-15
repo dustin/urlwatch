@@ -76,20 +76,21 @@ func (n notifier) notify(note notification, resq chan<- bool) {
 	}
 }
 
-func loadNotifiers() map[string]notifier {
+func loadNotifiers() (map[string]notifier, error) {
+	notifiers := map[string]notifier{}
+
 	f, err := os.Open("notify.json")
 	if err != nil {
-		log.Fatalf("Error opening 'notify.json': %v", err)
+		return notifiers, err
 	}
 	defer f.Close()
 
-	notifiers := map[string]notifier{}
 	d := json.NewDecoder(f)
 	if err = d.Decode(&notifiers); err != nil {
-		log.Fatalf("Error reading notifiers: %v", err)
+		return notifiers, err
 	}
 
-	return notifiers
+	return notifiers, nil
 }
 
 func checker(u string, ch chan<- notification) {
@@ -125,7 +126,10 @@ func checker(u string, ch chan<- notification) {
 
 func main() {
 	flag.Parse()
-	notifiers := loadNotifiers()
+	notifiers, err := loadNotifiers()
+	if err != nil {
+		log.Printf("Problem loading notifiers: %v", err)
+	}
 
 	ch := make(chan notification)
 	resq := make(chan bool)
