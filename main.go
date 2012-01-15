@@ -16,8 +16,10 @@ const max_retries = 5
 const max_time = 24 * time.Hour
 
 type notifier struct {
-	Driver string
-	Config map[string]string
+	Name     string
+	Driver   string
+	Disabled bool
+	Config   map[string]string
 }
 
 type notification struct {
@@ -76,8 +78,8 @@ func (n notifier) notify(note notification, resq chan<- bool) {
 	}
 }
 
-func loadNotifiers() (map[string]notifier, error) {
-	notifiers := map[string]notifier{}
+func loadNotifiers() ([]notifier, error) {
+	notifiers := []notifier{}
 
 	f, err := os.Open("notify.json")
 	if err != nil {
