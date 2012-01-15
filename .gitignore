@@ -1,0 +1,8 @@
+#*
+*.[568]
+*.a
+*~
+/notify.json
+/urlwatch
+[568].out
+_*

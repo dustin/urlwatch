@@ -1,0 +1,20 @@
+{
+    "prowl": {
+        "driver": "prowl",
+        "config": {
+            "apikey": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+            "application": "urlwatch",
+            "priority": "1"
+        }
+    },
+    "notifo": {
+        "driver": "notifo",
+        "config": {
+            "apiuser": "xxxxxx",
+            "apisecret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+            "to": "xxxxxx",
+            "label": "urlwatch",
+            "title": "urlwatch state change"
+        }
+    }
+}
