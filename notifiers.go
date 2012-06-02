@@ -3,20 +3,19 @@ package main
 import (
 	"encoding/json"
 	"errors"
-	"github.com/devcamcar/notifo.go"
-	"github.com/rem7/goprowl"
 	"log"
 	"net/http"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/rem7/goprowl"
 )
 
 type notifyFun func(n notifier, note notification) error
 
 var notifyFuns = map[string]notifyFun{
 	"prowl":   notifyProwl,
-	"notifo":  notifyNotifo,
 	"webhook": notifyWebhook,
 }
 
@@ -33,13 +32,6 @@ func notifyProwl(n notifier, note notification) (err error) {
 	}
 
 	return p.Push(&msg)
-}
-
-func notifyNotifo(n notifier, note notification) (err error) {
-	nfo := notifo.New(n.Config["apiuser"], n.Config["apisecret"])
-	_, err = nfo.SendNotification(n.Config["to"], note.Msg,
-		n.Config["label"], n.Config["title"], note.Url)
-	return
 }
 
 func notifyWebhook(n notifier, note notification) (err error) {

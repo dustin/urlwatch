@@ -4,7 +4,7 @@ This is a simple commandline utility to watch a web page that's not
 working and send me some notifications to let me know when it starts
 working again.
 
-Currently it supports growl and notifo.  Could do more in the future.
+Currently it supports growl and webhooks.  Could do more in the future.
 
 ## Howto
 

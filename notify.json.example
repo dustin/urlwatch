@@ -10,17 +10,6 @@
         }
     },
     {
-        "name": "my notifo",
-        "driver": "notifo",
-        "config": {
-            "apiuser": "myname",
-            "apisecret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-            "to": "myname",
-            "label": "urlwatch",
-            "title": "urlwatch state change"
-        }
-    },
-    {
         "name": "Request Bin Test",
         "driver": "webhook",
         "config": {
