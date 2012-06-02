@@ -10,6 +10,16 @@
         }
     },
     {
+        "name": "notify my android",
+        "driver": "nma",
+        "disabled": true,
+        "config": {
+            "apikey": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+            "application": "urlwatch",
+            "priority": "1"
+        }
+    },
+    {
         "name": "Request Bin Test",
         "driver": "webhook",
         "config": {

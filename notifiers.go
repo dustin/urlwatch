@@ -6,9 +6,11 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
+	"github.com/dustin/nma.go"
 	"github.com/rem7/goprowl"
 )
 
@@ -17,6 +19,25 @@ type notifyFun func(n notifier, note notification) error
 var notifyFuns = map[string]notifyFun{
 	"prowl":   notifyProwl,
 	"webhook": notifyWebhook,
+	"nma":     notifyMyAndroid,
+}
+
+func notifyMyAndroid(n notifier, note notification) (err error) {
+	notifier := nma.New(n.Config["apikey"])
+
+	i, err := strconv.Atoi(n.Config["priority"])
+	if err != nil {
+		return err
+	}
+
+	msg := nma.Notification{
+		Application: n.Config["application"],
+		Description: note.Msg,
+		Event:       note.Event,
+		Priority:    i,
+	}
+
+	return notifier.Notify(&msg)
 }
 
 func notifyProwl(n notifier, note notification) (err error) {
