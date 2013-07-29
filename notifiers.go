@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/dustin/nma.go"
+	"github.com/dustin/go-nma"
 	"github.com/rem7/goprowl"
 )
 
